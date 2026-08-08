@@ -11,10 +11,20 @@
   <body>
     <div id="root"></div>
 
+    <template id="episode-card">
+      <article>
+        <h1 class="title"></h1>
+        <img class="thumb" />
+        <p class="description"></p>
+      </article>
+    </template>
+
     <!-- Loads a provided function called getAllEpisodes() which returns all episodes -->
     <script src="episodes.js"></script>
 
     <!-- Loads YOUR javascript code -->
     <script src="script.js"></script>
+
+    <div id="grid"></div>
   </body>
 </html>
