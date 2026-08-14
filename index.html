@@ -15,6 +15,21 @@
       <select id="episode-select"></select>
     </div>
 
+    <template id="error">
+      <article class="error-card">
+        <h1>Something went wrong</h1>
+        <p class="error-message"></p>
+      </article>
+    </template>
+
+    <template id="loading">
+      <article class="loading-card">
+        <h1>Loading...</h1>
+        <p>Fetching episodes, please wait.</p>
+        <div class="spinner"></div>
+      </article>
+    </template>
+
     <template id="episode-card">
       <article>
         <h1 class="title"></h1>
@@ -24,10 +39,9 @@
     </template>
 
     <!-- Loads a provided function called getAllEpisodes() which returns all episodes -->
-    <script src="episodes.js"></script>
 
     <!-- Loads YOUR javascript code -->
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 
     <div id="grid"></div>
 
