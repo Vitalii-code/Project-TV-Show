@@ -4,7 +4,6 @@ const grid = document.getElementById("grid");
 
 async function setup() {
   const url = "https://api.tvmaze.com/shows/82/episodes";
-  displayLoading();
 
   await fetch(url)
     .then((response) => {
@@ -34,12 +33,6 @@ function displayError(errorMessage) {
   clone.querySelector(".error-message").textContent = errorMessage;
 
   document.body.appendChild(clone);
-}
-
-function displayLoading() {
-  const template = document.getElementById("loading");
-  const clone = template.content.cloneNode(true);
-  document.getElementById("grid").appendChild(clone);
 }
 
 // Renders a given list of episodes into the grid (used for both "show all"

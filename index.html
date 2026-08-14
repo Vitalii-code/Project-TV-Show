@@ -22,14 +22,6 @@
       </article>
     </template>
 
-    <template id="loading">
-      <article class="loading-card">
-        <h1>Loading...</h1>
-        <p>Fetching episodes, please wait.</p>
-        <div class="spinner"></div>
-      </article>
-    </template>
-
     <template id="episode-card">
       <article>
         <h1 class="title"></h1>
@@ -43,7 +35,13 @@
     <!-- Loads YOUR javascript code -->
     <script type="module" src="script.js"></script>
 
-    <div id="grid"></div>
+    <div id="grid">
+      <article class="loading-card">
+        <h1>Loading...</h1>
+        <p>Fetching episodes, please wait.</p>
+        <div class="spinner"></div>
+      </article>
+    </div>
 
     <footer>
       <p id="footer">
