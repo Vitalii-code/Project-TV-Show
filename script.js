@@ -1,12 +1,31 @@
 //You can edit ALL of the code here
-function setup() {
-  const allEpisodes = getAllEpisodes();
+let allEpisodes = [];
 
+function setup() {
+  allEpisodes = getAllEpisodes();
+
+  setupSearch();
+  setupEpisodeSelector(allEpisodes);
+
+  render(allEpisodes);
+}
+
+// Renders a given list of episodes into the grid (used for both "show all"
+// and "show filtered results") and updates the match-count message.
+function render(episodeList) {
   const grid = document.getElementById("grid");
   const template = document.getElementById("episode-card");
 
-  for (const episode of allEpisodes) {
+  // Clear previous render before drawing the new (possibly filtered) list
+  grid.innerHTML = "";
+
+  for (const episode of episodeList) {
     const clone = template.content.cloneNode(true);
+
+    // Give each card a stable id so the episode selector can scroll to it
+    const card =
+      clone.querySelector(".episode-card") || clone.firstElementChild;
+    if (card) card.id = `episode-${episode.id}`;
 
     clone.querySelector(".title").textContent =
       episode.name +
@@ -15,18 +34,79 @@ function setup() {
       "E" +
       String(episode.number).padStart(2, "0");
     clone.querySelector(".thumb").src = episode.image.medium;
-
     clone.querySelector(".description").innerHTML = episode.summary;
 
     grid.appendChild(clone);
   }
 
-  makePageForEpisodes(allEpisodes);
+  updateMatchCount(episodeList.length, allEpisodes.length);
 }
 
-function makePageForEpisodes(episodeList) {
+function updateMatchCount(shown, total) {
   const rootElem = document.getElementById("root");
-  rootElem.textContent = `Got ${episodeList.length} episode(s)`;
+  rootElem.textContent =
+    shown === total
+      ? `Got ${total} episode(s)`
+      : `Displaying ${shown}/${total} episode(s)`;
+}
+
+// --- Search ---
+
+function setupSearch() {
+  const searchInput = document.getElementById("search-input");
+
+  searchInput.addEventListener("input", () => {
+    const term = searchInput.value.trim().toLowerCase();
+
+    const filtered = term
+      ? allEpisodes.filter((episode) => {
+          const name = episode.name.toLowerCase();
+          const summary = (episode.summary || "").toLowerCase();
+          return name.includes(term) || summary.includes(term);
+        })
+      : allEpisodes;
+
+    render(filtered);
+  });
+}
+
+// --- Episode selector ---
+
+function setupEpisodeSelector(episodeList) {
+  const select = document.getElementById("episode-select");
+
+  // Placeholder option so nothing is auto-selected/scrolled-to on load
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Jump to episode...";
+  select.appendChild(placeholder);
+
+  for (const episode of episodeList) {
+    const code =
+      "S" +
+      String(episode.season).padStart(2, "0") +
+      "E" +
+      String(episode.number).padStart(2, "0");
+    const option = document.createElement("option");
+    option.value = episode.id;
+    option.textContent = `${code} - ${episode.name}`;
+    select.appendChild(option);
+  }
+
+  select.addEventListener("change", () => {
+    if (!select.value) return;
+
+    // Reset any active search so the target episode is guaranteed
+    // to be in the rendered list before we try to scroll to it.
+    const searchInput = document.getElementById("search-input");
+    searchInput.value = "";
+    render(allEpisodes);
+
+    const target = document.getElementById(`episode-${select.value}`);
+    if (target) {
+      target.scrollIntoView({behavior: "smooth", block: "start"});
+    }
+  });
 }
 
 window.onload = setup;
