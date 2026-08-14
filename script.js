@@ -2,7 +2,9 @@
 let allEpisodes = [];
 
 function setup() {
-  allEpisodes = getAllEpisodes();
+  // allEpisodes = getAllEpisodes();
+
+  const allEpisodes = fetchData("https://api.tvmaze.com/shows/82/episodes");
 
   setupSearch();
   setupEpisodeSelector(allEpisodes);
@@ -60,10 +62,10 @@ function setupSearch() {
 
     const filtered = term
       ? allEpisodes.filter((episode) => {
-          const name = episode.name.toLowerCase();
-          const summary = (episode.summary || "").toLowerCase();
-          return name.includes(term) || summary.includes(term);
-        })
+        const name = episode.name.toLowerCase();
+        const summary = (episode.summary || "").toLowerCase();
+        return name.includes(term) || summary.includes(term);
+      })
       : allEpisodes;
 
     render(filtered);
@@ -104,7 +106,7 @@ function setupEpisodeSelector(episodeList) {
 
     const target = document.getElementById(`episode-${select.value}`);
     if (target) {
-      target.scrollIntoView({behavior: "smooth", block: "start"});
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   });
 }
