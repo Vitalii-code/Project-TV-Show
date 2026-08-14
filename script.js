@@ -3,7 +3,6 @@
 const grid = document.getElementById("grid");
 
 async function setup() {
-  let allEpisodes = [];
   const url = "https://api.tvmaze.com/shows/82/episodes";
   displayLoading();
 
@@ -14,13 +13,14 @@ async function setup() {
     })
     .then((episodeList) => {
       if (episodeList?.length) {
-        setupSearch();
-        setupEpisodeSelector(allEpisodes);
-        render(allEpisodes);
+        setupSearch(episodeList);
+        setupEpisodeSelector(episodeList);
+        render(episodeList);
       }
     })
     .catch((err) => {
       displayError(err);
+      throw new Error(err);
     });
 }
 
@@ -75,7 +75,7 @@ function render(episodeList) {
     grid.appendChild(clone);
   }
 
-  updateMatchCount(episodeList.length, allEpisodes.length);
+  updateMatchCount(episodeList.length, episodeList.length);
 }
 
 function updateMatchCount(shown, total) {
@@ -88,19 +88,19 @@ function updateMatchCount(shown, total) {
 
 // --- Search ---
 
-function setupSearch() {
+function setupSearch(episodeList) {
   const searchInput = document.getElementById("search-input");
 
   searchInput.addEventListener("input", () => {
     const term = searchInput.value.trim().toLowerCase();
 
     const filtered = term
-      ? allEpisodes.filter((episode) => {
+      ? episodeList.filter((episode) => {
         const name = episode.name.toLowerCase();
         const summary = (episode.summary || "").toLowerCase();
         return name.includes(term) || summary.includes(term);
       })
-      : allEpisodes;
+      : episodeList;
 
     render(filtered);
   });
@@ -138,7 +138,7 @@ function setupEpisodeSelector(episodeList) {
     // to be in the rendered list before we try to scroll to it.
     const searchInput = document.getElementById("search-input");
     searchInput.value = "";
-    render(allEpisodes);
+    render(episodeList);
 
     const target = document.getElementById(`episode-${select.value}`);
     if (target) {
