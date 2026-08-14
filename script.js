@@ -37,8 +37,6 @@ function displayError(errorMessage) {
 }
 
 function displayLoading() {
-  // grid.innerHTML = "";
-
   const template = document.getElementById("loading");
   const clone = template.content.cloneNode(true);
   document.getElementById("grid").appendChild(clone);
