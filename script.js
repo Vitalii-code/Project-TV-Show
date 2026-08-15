@@ -1,6 +1,7 @@
 //You can edit ALL of the code here
 
 const grid = document.getElementById("grid");
+const showSelect = document.getElementById("show-select");
 
 async function setup() {
   const url = "https://api.tvmaze.com/shows/82/episodes";
@@ -87,10 +88,10 @@ function setupSearch(episodeList) {
 
     const filtered = term
       ? episodeList.filter((episode) => {
-        const name = episode.name.toLowerCase();
-        const summary = (episode.summary || "").toLowerCase();
-        return name.includes(term) || summary.includes(term);
-      })
+          const name = episode.name.toLowerCase();
+          const summary = (episode.summary || "").toLowerCase();
+          return name.includes(term) || summary.includes(term);
+        })
       : episodeList;
 
     render(filtered);
@@ -133,7 +134,7 @@ function setupEpisodeSelector(episodeList) {
 
     const target = document.getElementById(`episode-${select.value}`);
     if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      target.scrollIntoView({behavior: "smooth", block: "start"});
     }
   });
 }
