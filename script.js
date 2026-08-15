@@ -1,23 +1,50 @@
 //You can edit ALL of the code here
-let allEpisodes = [];
 
-function setup() {
-  allEpisodes = getAllEpisodes();
+const grid = document.getElementById("grid");
 
-  setupSearch();
-  setupEpisodeSelector(allEpisodes);
+async function setup() {
+  const url = "https://api.tvmaze.com/shows/82/episodes";
 
-  render(allEpisodes);
+  await fetch(url)
+    .then((response) => {
+      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+      return response.json();
+    })
+    .then((episodeList) => {
+      if (episodeList?.length) {
+        setupSearch(episodeList);
+        setupEpisodeSelector(episodeList);
+        render(episodeList);
+      }
+    })
+    .catch((err) => {
+      displayError(err);
+      throw new Error(err);
+    });
+}
+
+function displayError(errorMessage) {
+  grid.innerHTML = "";
+
+  const template = document.getElementById("error");
+
+  let clone = template.content.cloneNode(true);
+
+  clone.querySelector(".error-message").textContent = errorMessage;
+
+  document.body.appendChild(clone);
 }
 
 // Renders a given list of episodes into the grid (used for both "show all"
 // and "show filtered results") and updates the match-count message.
 function render(episodeList) {
-  const grid = document.getElementById("grid");
   const template = document.getElementById("episode-card");
 
   // Clear previous render before drawing the new (possibly filtered) list
+
   grid.innerHTML = "";
+
+  if (episodeList == undefined || episodeList.length === 0) return;
 
   for (const episode of episodeList) {
     const clone = template.content.cloneNode(true);
@@ -39,7 +66,7 @@ function render(episodeList) {
     grid.appendChild(clone);
   }
 
-  updateMatchCount(episodeList.length, allEpisodes.length);
+  updateMatchCount(episodeList.length, episodeList.length);
 }
 
 function updateMatchCount(shown, total) {
@@ -52,19 +79,19 @@ function updateMatchCount(shown, total) {
 
 // --- Search ---
 
-function setupSearch() {
+function setupSearch(episodeList) {
   const searchInput = document.getElementById("search-input");
 
   searchInput.addEventListener("input", () => {
     const term = searchInput.value.trim().toLowerCase();
 
     const filtered = term
-      ? allEpisodes.filter((episode) => {
-          const name = episode.name.toLowerCase();
-          const summary = (episode.summary || "").toLowerCase();
-          return name.includes(term) || summary.includes(term);
-        })
-      : allEpisodes;
+      ? episodeList.filter((episode) => {
+        const name = episode.name.toLowerCase();
+        const summary = (episode.summary || "").toLowerCase();
+        return name.includes(term) || summary.includes(term);
+      })
+      : episodeList;
 
     render(filtered);
   });
@@ -73,6 +100,8 @@ function setupSearch() {
 // --- Episode selector ---
 
 function setupEpisodeSelector(episodeList) {
+  if (episodeList == undefined || episodeList.length === 0) return;
+
   const select = document.getElementById("episode-select");
 
   // Placeholder option so nothing is auto-selected/scrolled-to on load
@@ -100,11 +129,11 @@ function setupEpisodeSelector(episodeList) {
     // to be in the rendered list before we try to scroll to it.
     const searchInput = document.getElementById("search-input");
     searchInput.value = "";
-    render(allEpisodes);
+    render(episodeList);
 
     const target = document.getElementById(`episode-${select.value}`);
     if (target) {
-      target.scrollIntoView({behavior: "smooth", block: "start"});
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   });
 }
