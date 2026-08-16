@@ -149,7 +149,8 @@ function setupSearch() {
 
 function setupEpisodeSelector() {
   select.addEventListener("change", () => {
-    if (!select.value) return;
+    const selectedId = select.value;
+    if (!selectedId) return;
 
     searchInput.value = "";
     render(currentEpisodes);
