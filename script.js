@@ -1,4 +1,3 @@
-//You can edit ALL of the code here
 const grid = document.getElementById("grid");
 const showSelect = document.getElementById("show-select");
 const searchInput = document.getElementById("search-input");
@@ -99,8 +98,7 @@ function render(episodeList) {
   for (const episode of episodeList) {
     const clone = template.content.cloneNode(true);
 
-    // This id is what "jump to episode" depends on - without it,
-    // getElementById(`episode-${select.value}`) finds nothing.
+    // Give each card a stable id so the episode selector can scroll to it
     const card =
       clone.querySelector(".episode-card") || clone.firstElementChild;
     if (card) card.id = `episode-${episode.id}`;
