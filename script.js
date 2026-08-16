@@ -6,14 +6,9 @@ const select = document.getElementById("episode-select");
 
 const SHOWS_URL = "https://api.tvmaze.com/shows";
 
-// Currently loaded episode list for whichever show is selected.
-// Kept as shared state instead of a closure param, so listeners only
-// need to be attached once (see note above).
 let currentEpisodes = [];
 let currentShowId = null;
 
-// Cache of already-fetched episode lists, keyed by show id, so switching
-// back to a previously-viewed show never re-fetches it (requirement 6).
 const episodeCache = new Map();
 
 async function setup() {
@@ -27,7 +22,6 @@ async function setup() {
       return response.json();
     })
     .then((shows) => {
-      // Alphabetical, case-insensitive (requirement 5)
       const sortedShows = shows.sort((a, b) =>
         a.name.localeCompare(b.name, undefined, {sensitivity: "base"}),
       );
@@ -75,7 +69,6 @@ function loadShow(showId) {
     })
     .then((episodeList) => {
       episodeCache.set(showId, episodeList);
-      // Ignore a stale response if the user has since picked another show
       if (currentShowId === showId) {
         currentEpisodes = episodeList;
         render(currentEpisodes);
@@ -96,12 +89,9 @@ function displayError(errorMessage) {
   document.body.appendChild(clone);
 }
 
-// Renders a given list of episodes into the grid (used for both "show all"
-// and "show filtered results") and updates the match-count message.
 function render(episodeList) {
   const template = document.getElementById("episode-card");
 
-  // Clear previous render before drawing the new (possibly filtered) list
   grid.innerHTML = "";
 
   if (episodeList == undefined || episodeList.length === 0) return;
@@ -109,7 +99,8 @@ function render(episodeList) {
   for (const episode of episodeList) {
     const clone = template.content.cloneNode(true);
 
-    // Give each card a stable id so the episode selector can scroll to it
+    // This id is what "jump to episode" depends on - without it,
+    // getElementById(`episode-${select.value}`) finds nothing.
     const card =
       clone.querySelector(".episode-card") || clone.firstElementChild;
     if (card) card.id = `episode-${episode.id}`;
@@ -162,8 +153,6 @@ function setupEpisodeSelector() {
   select.addEventListener("change", () => {
     if (!select.value) return;
 
-    // Reset any active search so the target episode is guaranteed
-    // to be in the rendered list before we try to scroll to it.
     searchInput.value = "";
     render(currentEpisodes);
 
@@ -174,8 +163,6 @@ function setupEpisodeSelector() {
   });
 }
 
-// Rebuilds the <select> options to match whatever list is currently
-// rendered (so it stays in sync across shows and search filtering).
 function populateEpisodeSelectOptions(episodeList) {
   select.innerHTML = "";
 
