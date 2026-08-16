@@ -155,7 +155,7 @@ function setupEpisodeSelector() {
     searchInput.value = "";
     render(currentEpisodes);
 
-    const target = document.getElementById(`episode-${select.value}`);
+    const target = document.getElementById(`episode-${selectedId}`);
     if (target) {
       target.scrollIntoView({behavior: "smooth", block: "start"});
     }
