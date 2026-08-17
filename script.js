@@ -36,6 +36,7 @@ async function setup() {
           populateShowSelect(sortedShows);
 
           if (sortedShows.length) {
+            showControls();
             loadShow(currentShowId);
           }
         })
@@ -54,6 +55,12 @@ async function setup() {
 
 function loadShowSearch() {
   grid.innerHTML = "";
+}
+
+function showControls() {
+  showSelect.classList.remove("controls-hidden");
+  searchInput.classList.remove("controls-hidden");
+  select.classList.remove("controls-hidden");
 }
 
 function isValidShowId(value) {
@@ -80,6 +87,7 @@ function setupShowSelector() {
 
 function loadShow(showId) {
   currentShowId = showId;
+  showSelect.value = showId;
   searchInput.value = "";
 
   if (episodeCache.has(showId)) {

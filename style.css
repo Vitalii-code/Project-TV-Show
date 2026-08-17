@@ -84,3 +84,7 @@ img {
     transform: rotate(360deg);
   }
 }
+
+.controls-hidden {
+  display: none;
+}
