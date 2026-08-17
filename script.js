@@ -11,28 +11,51 @@ let currentShowId = null;
 const episodeCache = new Map();
 
 async function setup() {
-  setupSearch();
-  setupEpisodeSelector();
-  setupShowSelector();
+  const params = new URLSearchParams(window.location.search);
 
-  await fetch(SHOWS_URL)
-    .then((response) => {
-      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-      return response.json();
-    })
-    .then((shows) => {
-      const sortedShows = shows.sort((a, b) =>
-        a.name.localeCompare(b.name, undefined, {sensitivity: "base"}),
-      );
-      populateShowSelect(sortedShows);
+  if (params.has("showId")) {
+    const showId = params.get("showId");
 
-      if (sortedShows.length) {
-        loadShow(sortedShows[0].id);
-      }
-    })
-    .catch((err) => {
-      displayError(err.message);
-    });
+    if (isValidMovieId(showId)) {
+      currentShowId = showId;
+
+      // load specific show list
+      setupSearch();
+      setupEpisodeSelector();
+      setupShowSelector();
+
+      await fetch(SHOWS_URL)
+        .then((response) => {
+          if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+          return response.json();
+        })
+        .then((shows) => {
+          const sortedShows = shows.sort((a, b) =>
+            a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+          );
+          populateShowSelect(sortedShows);
+
+          if (sortedShows.length) {
+            loadShow(currentShowId);
+          }
+        })
+        .catch((err) => {
+          displayError(err.message);
+        });
+    } else {
+      displayError(`Bad movieId passed in: "${movieId}"`);
+      return;
+    }
+  } else {
+    // display show search
+    showSearch();
+  }
+}
+
+function isValidMovieId(value) {
+  if (value === null || value === undefined) return false;
+  const num = Number(value);
+  return Number.isInteger(num) && num > 0;
 }
 
 function populateShowSelect(shows) {
@@ -135,10 +158,10 @@ function setupSearch() {
 
     const filtered = term
       ? currentEpisodes.filter((episode) => {
-          const name = episode.name.toLowerCase();
-          const summary = (episode.summary || "").toLowerCase();
-          return name.includes(term) || summary.includes(term);
-        })
+        const name = episode.name.toLowerCase();
+        const summary = (episode.summary || "").toLowerCase();
+        return name.includes(term) || summary.includes(term);
+      })
       : currentEpisodes;
 
     render(filtered);
@@ -157,7 +180,7 @@ function setupEpisodeSelector() {
 
     const target = document.getElementById(`episode-${selectedId}`);
     if (target) {
-      target.scrollIntoView({behavior: "smooth", block: "start"});
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   });
 }
