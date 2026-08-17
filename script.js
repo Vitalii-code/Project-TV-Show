@@ -4,6 +4,8 @@ const searchInput = document.getElementById("search-input");
 const select = document.getElementById("episode-select");
 
 const SHOWS_URL = "https://api.tvmaze.com/shows";
+const PLACEHOLDER_IMAGE =
+  "https://placehold.co/250x140?text=No+image+available";
 
 let currentEpisodes = [];
 let currentShowId = null;
@@ -49,11 +51,11 @@ async function setup() {
     }
   } else {
     // display show search
-    loadShowSearch();
+    loadShowFinder();
   }
 }
 
-function loadShowSearch() {
+function loadShowFinder() {
   grid.innerHTML = "";
 }
 
@@ -144,8 +146,12 @@ function render(episodeList) {
       String(episode.season).padStart(2, "0") +
       "E" +
       String(episode.number).padStart(2, "0");
-    clone.querySelector(".thumb").src = episode.image.medium;
-    clone.querySelector(".description").innerHTML = episode.summary;
+
+    clone.querySelector(".thumb").src =
+      episode.image && episode.image.medium
+        ? episode.image.medium
+        : PLACEHOLDER_IMAGE;
+    clone.querySelector(".description").textContent = episode.summary;
 
     grid.appendChild(clone);
   }
