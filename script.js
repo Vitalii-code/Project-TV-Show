@@ -16,7 +16,7 @@ async function setup() {
   if (params.has("showId")) {
     const showId = params.get("showId");
 
-    if (isValidMovieId(showId)) {
+    if (isValidShowId(showId)) {
       currentShowId = showId;
 
       // load specific show list
@@ -43,16 +43,20 @@ async function setup() {
           displayError(err.message);
         });
     } else {
-      displayError(`Bad movieId passed in: "${movieId}"`);
+      displayError(`Bad showId passed in: "${showId}"`);
       return;
     }
   } else {
     // display show search
-    showSearch();
+    loadShowSearch();
   }
 }
 
-function isValidMovieId(value) {
+function loadShowSearch() {
+  grid.innerHTML = "";
+}
+
+function isValidShowId(value) {
   if (value === null || value === undefined) return false;
   const num = Number(value);
   return Number.isInteger(num) && num > 0;
@@ -163,8 +167,6 @@ function setupSearch() {
         return name.includes(term) || summary.includes(term);
       })
       : currentEpisodes;
-
-    render(filtered);
   });
 }
 
@@ -176,7 +178,6 @@ function setupEpisodeSelector() {
     if (!selectedId) return;
 
     searchInput.value = "";
-    render(currentEpisodes);
 
     const target = document.getElementById(`episode-${selectedId}`);
     if (target) {
