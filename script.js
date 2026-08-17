@@ -1,26 +1,80 @@
-//You can edit ALL of the code here
-
 const grid = document.getElementById("grid");
 const showSelect = document.getElementById("show-select");
+const searchInput = document.getElementById("search-input");
+const select = document.getElementById("episode-select");
+
+const SHOWS_URL = "https://api.tvmaze.com/shows";
+
+let currentEpisodes = [];
+let currentShowId = null;
+
+const episodeCache = new Map();
 
 async function setup() {
-  const url = "https://api.tvmaze.com/shows/82/episodes";
+  setupSearch();
+  setupEpisodeSelector();
+  setupShowSelector();
 
-  await fetch(url)
+  await fetch(SHOWS_URL)
+    .then((response) => {
+      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+      return response.json();
+    })
+    .then((shows) => {
+      const sortedShows = shows.sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, {sensitivity: "base"}),
+      );
+      populateShowSelect(sortedShows);
+
+      if (sortedShows.length) {
+        loadShow(sortedShows[0].id);
+      }
+    })
+    .catch((err) => {
+      displayError(err.message);
+    });
+}
+
+function populateShowSelect(shows) {
+  showSelect.innerHTML = "";
+  shows.forEach((show) => {
+    const option = document.createElement("option");
+    option.value = show.id;
+    option.textContent = show.name;
+    showSelect.appendChild(option);
+  });
+}
+
+function setupShowSelector() {
+  showSelect.addEventListener("change", () => {
+    loadShow(Number(showSelect.value));
+  });
+}
+
+function loadShow(showId) {
+  currentShowId = showId;
+  searchInput.value = "";
+
+  if (episodeCache.has(showId)) {
+    currentEpisodes = episodeCache.get(showId);
+    render(currentEpisodes);
+    return;
+  }
+
+  fetch(`https://api.tvmaze.com/shows/${showId}/episodes`)
     .then((response) => {
       if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
       return response.json();
     })
     .then((episodeList) => {
-      if (episodeList?.length) {
-        setupSearch(episodeList);
-        setupEpisodeSelector(episodeList);
-        render(episodeList);
+      episodeCache.set(showId, episodeList);
+      if (currentShowId === showId) {
+        currentEpisodes = episodeList;
+        render(currentEpisodes);
       }
     })
     .catch((err) => {
-      displayError(err);
-      throw new Error(err);
+      displayError(err.message);
     });
 }
 
@@ -28,20 +82,14 @@ function displayError(errorMessage) {
   grid.innerHTML = "";
 
   const template = document.getElementById("error");
-
-  let clone = template.content.cloneNode(true);
-
+  const clone = template.content.cloneNode(true);
   clone.querySelector(".error-message").textContent = errorMessage;
 
   document.body.appendChild(clone);
 }
 
-// Renders a given list of episodes into the grid (used for both "show all"
-// and "show filtered results") and updates the match-count message.
 function render(episodeList) {
   const template = document.getElementById("episode-card");
-
-  // Clear previous render before drawing the new (possibly filtered) list
 
   grid.innerHTML = "";
 
@@ -67,7 +115,8 @@ function render(episodeList) {
     grid.appendChild(clone);
   }
 
-  updateMatchCount(episodeList.length, episodeList.length);
+  updateMatchCount(episodeList.length, currentEpisodes.length);
+  populateEpisodeSelectOptions(episodeList);
 }
 
 function updateMatchCount(shown, total) {
@@ -80,19 +129,17 @@ function updateMatchCount(shown, total) {
 
 // --- Search ---
 
-function setupSearch(episodeList) {
-  const searchInput = document.getElementById("search-input");
-
+function setupSearch() {
   searchInput.addEventListener("input", () => {
     const term = searchInput.value.trim().toLowerCase();
 
     const filtered = term
-      ? episodeList.filter((episode) => {
+      ? currentEpisodes.filter((episode) => {
           const name = episode.name.toLowerCase();
           const summary = (episode.summary || "").toLowerCase();
           return name.includes(term) || summary.includes(term);
         })
-      : episodeList;
+      : currentEpisodes;
 
     render(filtered);
   });
@@ -100,16 +147,30 @@ function setupSearch(episodeList) {
 
 // --- Episode selector ---
 
-function setupEpisodeSelector(episodeList) {
-  if (episodeList == undefined || episodeList.length === 0) return;
+function setupEpisodeSelector() {
+  select.addEventListener("change", () => {
+    const selectedId = select.value;
+    if (!selectedId) return;
 
-  const select = document.getElementById("episode-select");
+    searchInput.value = "";
+    render(currentEpisodes);
 
-  // Placeholder option so nothing is auto-selected/scrolled-to on load
+    const target = document.getElementById(`episode-${selectedId}`);
+    if (target) {
+      target.scrollIntoView({behavior: "smooth", block: "start"});
+    }
+  });
+}
+
+function populateEpisodeSelectOptions(episodeList) {
+  select.innerHTML = "";
+
   const placeholder = document.createElement("option");
   placeholder.value = "";
   placeholder.textContent = "Jump to episode...";
   select.appendChild(placeholder);
+
+  if (episodeList == undefined || episodeList.length === 0) return;
 
   for (const episode of episodeList) {
     const code =
@@ -122,21 +183,6 @@ function setupEpisodeSelector(episodeList) {
     option.textContent = `${code} - ${episode.name}`;
     select.appendChild(option);
   }
-
-  select.addEventListener("change", () => {
-    if (!select.value) return;
-
-    // Reset any active search so the target episode is guaranteed
-    // to be in the rendered list before we try to scroll to it.
-    const searchInput = document.getElementById("search-input");
-    searchInput.value = "";
-    render(episodeList);
-
-    const target = document.getElementById(`episode-${select.value}`);
-    if (target) {
-      target.scrollIntoView({behavior: "smooth", block: "start"});
-    }
-  });
 }
 
 window.onload = setup;
