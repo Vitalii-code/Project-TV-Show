@@ -167,6 +167,8 @@ function setupSearch() {
         return name.includes(term) || summary.includes(term);
       })
       : currentEpisodes;
+
+    render(filtered);
   });
 }
 
