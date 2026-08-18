@@ -11,15 +11,40 @@
   <body>
     <div id="root"></div>
     <div id="controls">
-      <input type="text" id="search-input" placeholder="Search episodes..." />
-      <select id="episode-select"></select>
-      <select id="show-select"></select>
+      <a href="/" id="back-link" class="controls-hidden"
+        >&larr; Back to shows</a
+      >
+      <input type="text" id="search-input" placeholder="Search..." />
+      <select class="controls-hidden" id="episode-select"></select>
+      <select class="controls-hidden" id="show-select"></select>
     </div>
-
     <template id="error">
       <article class="error-card">
         <h1>Something went wrong</h1>
         <p class="error-message"></p>
+      </article>
+    </template>
+
+    <template id="show-card">
+      <article>
+        <grid>
+          <h1 class="title"></h1>
+          <div>
+            <img class="thumb" />
+            <p class="description"></p>
+            <grid class="info-panel">
+              <b>
+                <p class="rating">Rated: 8</p>
+                <p class="genres">Genres: Horror</p>
+                <p class="status">Status Ended</p>
+                <p class="runtime">Runtime: 60</p>
+              </b>
+            </grid>
+          </div>
+          <div>
+            <button>Click to show more</button>
+          </div>
+        </grid>
       </article>
     </template>
 

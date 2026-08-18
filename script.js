@@ -2,37 +2,158 @@ const grid = document.getElementById("grid");
 const showSelect = document.getElementById("show-select");
 const searchInput = document.getElementById("search-input");
 const select = document.getElementById("episode-select");
+const article = document.getElementsByTagName("article");
+const backLink = document.getElementById("back-link");
 
 const SHOWS_URL = "https://api.tvmaze.com/shows";
+const PLACEHOLDER_IMAGE =
+  "https://placehold.co/250x140?text=No+image+available";
 
 let currentEpisodes = [];
 let currentShowId = null;
+let currentShows = [];
 
 const episodeCache = new Map();
 
 async function setup() {
-  setupSearch();
-  setupEpisodeSelector();
-  setupShowSelector();
+  const params = new URLSearchParams(window.location.search);
 
-  await fetch(SHOWS_URL)
-    .then((response) => {
-      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-      return response.json();
-    })
-    .then((shows) => {
-      const sortedShows = shows.sort((a, b) =>
-        a.name.localeCompare(b.name, undefined, {sensitivity: "base"}),
-      );
-      populateShowSelect(sortedShows);
+  if (params.has("showId")) {
+    const showId = params.get("showId");
 
-      if (sortedShows.length) {
-        loadShow(sortedShows[0].id);
-      }
-    })
-    .catch((err) => {
-      displayError(err.message);
+    if (isValidShowId(showId)) {
+      currentShowId = showId;
+
+      // load specific show list
+      setupSearch();
+      setupEpisodeSelector();
+      setupShowSelector();
+
+      await fetch(SHOWS_URL)
+        .then((response) => {
+          if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+          return response.json();
+        })
+        .then((shows) => {
+          const sortedShows = shows.sort((a, b) =>
+            a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+          );
+
+          if (sortedShows.length) {
+            populateShowSelect(sortedShows);
+            showControls();
+
+            grid.classList.add("episodes-grid");
+
+            loadShow(currentShowId);
+          }
+        })
+        .catch((err) => {
+          displayError(err.message);
+        });
+    } else {
+      displayError(`Bad showId passed in: "${showId}"`);
+      return;
+    }
+  } else {
+    // display show search
+    await fetch(SHOWS_URL)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        return response.json();
+      })
+      .then((shows) => {
+        const sortedShows = shows.sort((a, b) =>
+          a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+        );
+
+        currentShows = sortedShows;
+
+        populateShowSelect(sortedShows);
+        grid.classList.add("shows-grid");
+        setupShowSearch();
+
+        loadShowFinder(sortedShows);
+      })
+      .catch((err) => {
+        displayError(err.message);
+      });
+  }
+}
+
+function loadShowFinder(shows) {
+  const template = document.getElementById("show-card");
+
+  grid.innerHTML = "";
+
+  for (const show of shows) {
+    const clone = template.content.cloneNode(true);
+    const article = clone.querySelector("article");
+    const button = clone.querySelector("button");
+
+    article.classList.add("article-horizontal");
+
+    // Give each card a stable id so the episode selector can scroll to it
+    const card = clone.querySelector(".show-card") || clone.firstElementChild;
+    if (card) card.id = `show-${show.id}`;
+
+    clone.querySelector(".title").textContent = show.name;
+
+    clone.querySelector(".thumb").src =
+      show.image && show.image.medium ? show.image.medium : PLACEHOLDER_IMAGE;
+    clone.querySelector(".description").innerHTML = show.summary;
+
+    clone.querySelector(".rating").innerText =
+      `Rated: ${show.rating?.average ?? "Rating unavailable"}`;
+
+    clone.querySelector(".genres").innerText =
+      `Genres: ${show.genres.join(" | ")} `;
+
+    clone.querySelector(".status").innerText =
+      `Status: ${show.status === "Running" ? "Running ✓" : "Ended χ"} `;
+
+    clone.querySelector(".runtime").innerText =
+      `Duration: ${show.runtime ? `${show.runtime}m` : "Duration unavaliable"} `;
+
+    button.addEventListener("click", () => {
+      window.location.href = `/?showId=${show.id}`;
     });
+
+    grid.appendChild(clone);
+  }
+}
+
+function setupShowSearch() {
+  searchInput.addEventListener("input", () => {
+    const term = searchInput.value.trim().toLowerCase();
+
+    const filtered = term
+      ? currentShows.filter((show) => {
+        const name = show.name.toLowerCase();
+        const summary = (show.summary || "").toLowerCase();
+        const genres = (show.genres || []).join(" ").toLowerCase();
+        return (
+          name.includes(term) ||
+          summary.includes(term) ||
+          genres.includes(term)
+        );
+      })
+      : currentShows;
+
+    loadShowFinder(filtered);
+  });
+}
+function showControls() {
+  showSelect.classList.remove("controls-hidden");
+  searchInput.classList.remove("controls-hidden");
+  select.classList.remove("controls-hidden");
+  backLink.classList.remove("controls-hidden");
+}
+
+function isValidShowId(value) {
+  if (value === null || value === undefined) return false;
+  const num = Number(value);
+  return Number.isInteger(num) && num > 0;
 }
 
 function populateShowSelect(shows) {
@@ -53,6 +174,7 @@ function setupShowSelector() {
 
 function loadShow(showId) {
   currentShowId = showId;
+  showSelect.value = showId;
   searchInput.value = "";
 
   if (episodeCache.has(showId)) {
@@ -109,8 +231,12 @@ function render(episodeList) {
       String(episode.season).padStart(2, "0") +
       "E" +
       String(episode.number).padStart(2, "0");
-    clone.querySelector(".thumb").src = episode.image.medium;
-    clone.querySelector(".description").innerHTML = episode.summary;
+
+    clone.querySelector(".thumb").src =
+      episode.image && episode.image.medium
+        ? episode.image.medium
+        : PLACEHOLDER_IMAGE;
+    clone.querySelector(".description").innerText = episode.summary;
 
     grid.appendChild(clone);
   }
@@ -135,10 +261,10 @@ function setupSearch() {
 
     const filtered = term
       ? currentEpisodes.filter((episode) => {
-          const name = episode.name.toLowerCase();
-          const summary = (episode.summary || "").toLowerCase();
-          return name.includes(term) || summary.includes(term);
-        })
+        const name = episode.name.toLowerCase();
+        const summary = (episode.summary || "").toLowerCase();
+        return name.includes(term) || summary.includes(term);
+      })
       : currentEpisodes;
 
     render(filtered);
@@ -153,11 +279,10 @@ function setupEpisodeSelector() {
     if (!selectedId) return;
 
     searchInput.value = "";
-    render(currentEpisodes);
 
     const target = document.getElementById(`episode-${selectedId}`);
     if (target) {
-      target.scrollIntoView({behavior: "smooth", block: "start"});
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   });
 }
