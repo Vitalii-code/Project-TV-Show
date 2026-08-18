@@ -88,6 +88,7 @@ function loadShowFinder(shows) {
   for (const show of shows) {
     const clone = template.content.cloneNode(true);
     const article = clone.querySelector("article");
+    const button = clone.querySelector("button");
 
     article.classList.add("article-horizontal");
 
@@ -101,18 +102,20 @@ function loadShowFinder(shows) {
       show.image && show.image.medium ? show.image.medium : PLACEHOLDER_IMAGE;
     clone.querySelector(".description").innerHTML = show.summary;
 
-    clone.querySelector(".rating").innerText = `Rated: ${show.rating.average}`;
+    clone.querySelector(".rating").innerText =
+      `Rated: ${show.rating?.average ?? "Rating unavailable"}`;
+
     clone.querySelector(".genres").innerText =
-      `Genres: ${show.genres.join(" | ")}`;
+      `Genres: ${show.genres.join(" | ")} `;
 
     clone.querySelector(".status").innerText =
-      `Status: ${show.status === "Running" ? "Running ✓" : "Ended χ"}`;
+      `Status: ${show.status === "Running" ? "Running ✓" : "Ended χ"} `;
 
     clone.querySelector(".runtime").innerText =
-      `Duration: ${show.runtime ? `${show.runtime}m` : "Unavaliable"}`;
+      `Duration: ${show.runtime ? `${show.runtime}m` : "Duration unavaliable"} `;
 
-    article.addEventListener("click", () => {
-      window.location.href = `/?showId=${show.id}`;
+    button.addEventListener("click", () => {
+      window.location.href = `/? showId = ${show.id} `;
     });
 
     grid.appendChild(clone);
