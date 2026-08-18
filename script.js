@@ -101,6 +101,16 @@ function loadShowFinder(shows) {
       show.image && show.image.medium ? show.image.medium : PLACEHOLDER_IMAGE;
     clone.querySelector(".description").innerHTML = show.summary;
 
+    clone.querySelector(".rating").innerText = `Rated: ${show.rating.average}`;
+    clone.querySelector(".genres").innerText =
+      `Genres: ${show.genres.join(" | ")}`;
+
+    clone.querySelector(".status").innerText =
+      `Status: ${show.status === "Running" ? "Running ✓" : "Ended χ"}`;
+
+    clone.querySelector(".runtime").innerText =
+      `Duration: ${show.runtime ? `${show.runtime}m` : "Unavaliable"}`;
+
     article.addEventListener("click", () => {
       window.location.href = `/?showId=${show.id}`;
     });
