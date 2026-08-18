@@ -2,6 +2,7 @@ const grid = document.getElementById("grid");
 const showSelect = document.getElementById("show-select");
 const searchInput = document.getElementById("search-input");
 const select = document.getElementById("episode-select");
+const article = document.getElementsByTagName("article");
 
 const SHOWS_URL = "https://api.tvmaze.com/shows";
 const PLACEHOLDER_IMAGE =
@@ -75,12 +76,15 @@ async function setup() {
 }
 
 function loadShowFinder(shows) {
-  const template = document.getElementById("episode-card");
+  const template = document.getElementById("show-card");
 
   grid.innerHTML = "";
 
   for (const show of shows) {
     const clone = template.content.cloneNode(true);
+    const article = clone.querySelector("article");
+
+    article.classList.add("article-horizontal");
 
     // Give each card a stable id so the episode selector can scroll to it
     const card = clone.querySelector(".show-card") || clone.firstElementChild;

@@ -30,6 +30,12 @@ article {
   border-radius: 10px;
 }
 
+.article-horizontal div {
+  display: flex;
+  justify-content: flex-start;
+  margin: 20px;
+}
+
 h1 {
   text-align: center;
   border-style: solid;
