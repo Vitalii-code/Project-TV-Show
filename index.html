@@ -11,11 +11,13 @@
   <body>
     <div id="root"></div>
     <div id="controls">
+      <a href="/" id="back-link" class="controls-hidden"
+        >&larr; Back to shows</a
+      >
       <input type="text" id="search-input" placeholder="Search..." />
       <select class="controls-hidden" id="episode-select"></select>
       <select class="controls-hidden" id="show-select"></select>
     </div>
-
     <template id="error">
       <article class="error-card">
         <h1>Something went wrong</h1>

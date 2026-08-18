@@ -3,6 +3,7 @@ const showSelect = document.getElementById("show-select");
 const searchInput = document.getElementById("search-input");
 const select = document.getElementById("episode-select");
 const article = document.getElementsByTagName("article");
+const backLink = document.getElementById("back-link");
 
 const SHOWS_URL = "https://api.tvmaze.com/shows";
 const PLACEHOLDER_IMAGE =
@@ -146,6 +147,7 @@ function showControls() {
   showSelect.classList.remove("controls-hidden");
   searchInput.classList.remove("controls-hidden");
   select.classList.remove("controls-hidden");
+  backLink.classList.remove("controls-hidden");
 }
 
 function isValidShowId(value) {
