@@ -115,7 +115,7 @@ function loadShowFinder(shows) {
       `Duration: ${show.runtime ? `${show.runtime}m` : "Duration unavaliable"} `;
 
     button.addEventListener("click", () => {
-      window.location.href = `/? showId = ${show.id} `;
+      window.location.href = `/?showId=${show.id}`;
     });
 
     grid.appendChild(clone);
@@ -130,14 +130,18 @@ function setupShowSearch() {
       ? currentShows.filter((show) => {
         const name = show.name.toLowerCase();
         const summary = (show.summary || "").toLowerCase();
-        return name.includes(term) || summary.includes(term);
+        const genres = (show.genres || []).join(" ").toLowerCase();
+        return (
+          name.includes(term) ||
+          summary.includes(term) ||
+          genres.includes(term)
+        );
       })
       : currentShows;
 
     loadShowFinder(filtered);
   });
 }
-
 function showControls() {
   showSelect.classList.remove("controls-hidden");
   searchInput.classList.remove("controls-hidden");
