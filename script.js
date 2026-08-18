@@ -10,6 +10,7 @@ const PLACEHOLDER_IMAGE =
 
 let currentEpisodes = [];
 let currentShowId = null;
+let currentShows = [];
 
 const episodeCache = new Map();
 
@@ -64,8 +65,12 @@ async function setup() {
         const sortedShows = shows.sort((a, b) =>
           a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
         );
+
+        currentShows = sortedShows;
+
         populateShowSelect(sortedShows);
         grid.classList.add("shows-grid");
+        setupShowSearch();
 
         loadShowFinder(sortedShows);
       })
@@ -102,6 +107,22 @@ function loadShowFinder(shows) {
 
     grid.appendChild(clone);
   }
+}
+
+function setupShowSearch() {
+  searchInput.addEventListener("input", () => {
+    const term = searchInput.value.trim().toLowerCase();
+
+    const filtered = term
+      ? currentShows.filter((show) => {
+        const name = show.name.toLowerCase();
+        const summary = (show.summary || "").toLowerCase();
+        return name.includes(term) || summary.includes(term);
+      })
+      : currentShows;
+
+    loadShowFinder(filtered);
+  });
 }
 
 function showControls() {
