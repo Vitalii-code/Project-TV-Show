@@ -96,6 +96,10 @@ function loadShowFinder(shows) {
       show.image && show.image.medium ? show.image.medium : PLACEHOLDER_IMAGE;
     clone.querySelector(".description").innerHTML = show.summary;
 
+    article.addEventListener("click", () => {
+      window.location.href = `/?showId=${show.id}`;
+    });
+
     grid.appendChild(clone);
   }
 }
