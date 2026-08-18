@@ -35,10 +35,13 @@ async function setup() {
           const sortedShows = shows.sort((a, b) =>
             a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
           );
-          populateShowSelect(sortedShows);
 
           if (sortedShows.length) {
+            populateShowSelect(sortedShows);
             showControls();
+
+            grid.classList.add("episodes-grid");
+
             loadShow(currentShowId);
           }
         })
@@ -51,12 +54,46 @@ async function setup() {
     }
   } else {
     // display show search
-    loadShowFinder();
+    await fetch(SHOWS_URL)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        return response.json();
+      })
+      .then((shows) => {
+        const sortedShows = shows.sort((a, b) =>
+          a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+        );
+        populateShowSelect(sortedShows);
+        grid.classList.add("shows-grid");
+
+        loadShowFinder(sortedShows);
+      })
+      .catch((err) => {
+        displayError(err.message);
+      });
   }
 }
 
-function loadShowFinder() {
+function loadShowFinder(shows) {
+  const template = document.getElementById("episode-card");
+
   grid.innerHTML = "";
+
+  for (const show of shows) {
+    const clone = template.content.cloneNode(true);
+
+    // Give each card a stable id so the episode selector can scroll to it
+    const card = clone.querySelector(".show-card") || clone.firstElementChild;
+    if (card) card.id = `show-${show.id}`;
+
+    clone.querySelector(".title").textContent = show.name;
+
+    clone.querySelector(".thumb").src =
+      show.image && show.image.medium ? show.image.medium : PLACEHOLDER_IMAGE;
+    clone.querySelector(".description").innerHTML = show.summary;
+
+    grid.appendChild(clone);
+  }
 }
 
 function showControls() {
@@ -151,7 +188,7 @@ function render(episodeList) {
       episode.image && episode.image.medium
         ? episode.image.medium
         : PLACEHOLDER_IMAGE;
-    clone.querySelector(".description").textContent = episode.summary;
+    clone.querySelector(".description").innerText = episode.summary;
 
     grid.appendChild(clone);
   }
