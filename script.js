@@ -69,9 +69,15 @@ async function setup() {
 
         currentShows = sortedShows;
 
-        populateShowSelect(sortedShows);
+        showSelect.classList.remove("controls-hidden");
+
+        populateShowSelect(currentShows);
         grid.classList.add("shows-grid");
         setupShowSearch();
+
+        showSelect.addEventListener("change", () => {
+          window.location.href = `/?showId=${showSelect.value}`;
+        });
 
         loadShowFinder(sortedShows);
       })
